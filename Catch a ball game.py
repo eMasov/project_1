@@ -49,17 +49,17 @@ def ball_params(n):
     return sizes, colors
 
 
-def reflection(border, coord, R, speed):
+def reflection(border1, border2, coord, R, speed):
     '''
-    отвечате за отражение шара от стенки
+    отвечат за отражение шара от стенки
     :param border: координата границы стенки, от которой отражается шар
     :param coord: координата центра шара
     :param R: радиус шара
     :param speed: компонента скорости шара, перпендикулярная этой стенке
     :return: возвращает скорость после отражениия
     '''
-    if (coord >= border - R and speed > 0) or (coord <= R and speed < 0):
-        speed = -1 * randint(border // 120, border // 60) * (speed / abs(speed))
+    if (coord >= border1 - R and speed > 0) or (coord <= border2 + R and speed < 0):
+        speed = -1 * randint(border1 // 120, border1 // 60) * (speed / abs(speed))
     return speed
 
 
@@ -69,9 +69,9 @@ def reincarnation():
     :return: возвращает массив со новыми координатой, скоростью, цветом шара
     '''
     x = randint(width // 4, 2 * width // 4)
-    y = randint(-60, -50)
+    y = randint(1250, 1260)
     speed_x = randint(width // 120, width // 60)
-    speed_y = randint(height // 120, width // 60)
+    speed_y = randint(-height // 60, -width // 120)
     color = ((randint(100, 255), randint(100, 255), randint(100, 255)))
     return x, y, speed_x, speed_y, color
 
@@ -104,8 +104,8 @@ def game(X_, Y_, colors_, sizes_, speeds_x_, speeds_y_, delta_t=30, T=20000):
             circle(screen, color_, (x, y), r)
 
             # обновление скорости
-            speeds_x[i] = reflection(width, x, r, speeds_x[i])
-            speeds_y[i] = reflection(height, y, r, speeds_y[i])
+            speeds_x[i] = reflection(width, 0, x, r, speeds_x[i])
+            speeds_y[i] = reflection(height, 150, y, r, speeds_y[i])
             # обновление координат
             X[i] += speeds_x[i]
             Y[i] += speeds_y[i]
@@ -124,6 +124,14 @@ def game(X_, Y_, colors_, sizes_, speeds_x_, speeds_y_, delta_t=30, T=20000):
                     if (click_y - y) ** 2 + (click_x - x) ** 2 < r ** 2:
                         X[i], Y[i], speeds_x[i], speeds_y[i], colors[i] = reincarnation()
                         count += 1
+                if click_x > 1090 and click_y < 90:
+                    pygame.quit()
+                    quit()
+
+        score_text = pygame.font.SysFont('Corbel', 35).render('YOUR SCORE: ' + str(count), True, (255, 255, 255))
+        screen.blit(score_text, (500, 100, 120, 40))
+        exit_text = pygame.font.SysFont('Corbel', 38).render('EXIT', True, (255, 0, 0))
+        screen.blit(exit_text, (1080, 90, 120, 40))
         pygame.time.delay(30)
         pygame.display.update()
         time_long += 30 # учет прошедшего промежутка времени
@@ -159,8 +167,8 @@ def enter_nickname(text_color=(255, 255, 255), screen_color=(0, 0, 0), nick_colo
         screen.blit(user_text, (400, 300, 120, 40))
         instruction = pygame.font.SysFont('Corbel', 35).render('Click on balls to get the score.', True, text_color)
         screen.blit(instruction, (400, 500, 120, 40))
-        instruction = pygame.font.SysFont('Corbel', 35).render('After you click enter you will have 20 seconds for the game', True, text_color)
-        screen.blit(instruction, (230, 550, 120, 40))
+        instruction = pygame.font.SysFont('Corbel', 35).render('You will have 20 seconds for the game', True, text_color)
+        screen.blit(instruction, (330, 550, 120, 40))
         pygame.display.flip()
         pygame.display.update()
         clock = pygame.time.Clock()
@@ -194,5 +202,6 @@ while True:
     nick = enter_nickname() # узнаем ник пользователя
     score = game(X, Y, colors, sizes, speeds_x, speeds_y,) # запускаем игру
     add_result('Result table - Лист1.csv', nick, score)
+
     pygame.quit()
     exit()
